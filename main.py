@@ -54,10 +54,10 @@ def inputDate(lang="en"):
     Prompt the user to enter a valid past date (day, month, year).
     Ensures the date is not in the future and the day is valid for the given month/year.
     """
-    month = inputInt(MESSAGES["inputMonth"][lang], 1, 12)
-    year = inputInt(MESSAGES["inputYear"][lang], 1900, 2100)
+    month = inputInt(MESSAGES["inputMonth"][lang], 1, 12, lang)
+    year = inputInt(MESSAGES["inputYear"][lang], 1900, 2100, lang)
     max_day = calendar.monthrange(year, month)[1]
-    day = inputInt(MESSAGES["inputDay"][lang], 1, max_day)
+    day = inputInt(MESSAGES["inputDay"][lang], 1, max_day, lang)
     given_date = date(year, month, day)
     if given_date >= date.today():
         print(MESSAGES["inFuture"][lang])
