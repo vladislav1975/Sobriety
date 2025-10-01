@@ -25,25 +25,27 @@ def inputInt(prompt, min_value, max_value, lang="en"):
     """
     Prompt the user for an integer input within a specified range.
     Repeats until a valid integer in the range is entered.
+    Styled for Linux terminal look.
     """
     while True:
         try:
-            value = int(input(prompt + f" ({min_value}-{max_value}): "))
+            value = int(input(f"> {prompt} [{min_value}-{max_value}]: "))
             if min_value <= value <= max_value:
                 return value
             else:
-                print(MESSAGES["errorInt"][lang])
+                print(f"! {MESSAGES['errorInt'][lang]}")
         except ValueError:
-            print(MESSAGES["errorInt"][lang])
+            print(f"! {MESSAGES['errorInt'][lang]}")
 
 def chooseLanguage():
     """
     Ask the user to choose a language (Russian or English).
     Defaults to English if input is invalid.
+    Styled for Linux terminal look.
     """
-    lang = input("Choose language: \n-----------\nRu\nEn(default)\n----------- \n").strip().lower()
+    lang = input("> Choose language [ru/en]: ").strip().lower()
     if lang not in ["ru", "en"]:
-        print("Invalid choice, defaulting to English.")
+        print("! Invalid choice, defaulting to English.")
         lang = "en"
     return lang    
 
@@ -65,30 +67,22 @@ def inputDate(lang="en"):
 def main():   
     """
     Main function to run the sobriety date calculator.
-    - Sets language
-    - Gets a valid past date from the user
-    - Displays the entered date
-    - Calculates and displays the number of days since that date
-    - Calculates and displays the difference in years, months, and days
+    Styled for Linux terminal look.
     """
     # Set language preference
     lang = chooseLanguage()
-    print()
     # Input month and year first
     given_date = inputDate(lang)
     day, month, year = given_date.day, given_date.month, given_date.year
 
-    # Display the entered date
-    print(f"{MESSAGES['enteredDate'][lang]}: {MESSAGES['day'][lang]} {day}, {MESSAGES['month'][lang]} {month}, {MESSAGES['year'][lang]} {year}")
-
-    # Calculate days from given date to today
+    print("-" * 40)
+    print(f"{MESSAGES['enteredDate'][lang]}: {day:02d}.{month:02d}.{year}")
     today = date.today()
     delta = (today - given_date).days
     print(f"{MESSAGES['daysFrom'][lang]}: {delta}")
-
-    # Calculate difference in years, months, and days
     diff = relativedelta.relativedelta(today, given_date)
-    print(f"{MESSAGES['whichIs'][lang]} {diff.years} {MESSAGES['years'][lang]}, {diff.months} {MESSAGES['months'][lang]}, {MESSAGES['and'][lang]} {diff.days} {MESSAGES['days'][lang]}.")
+    print(f"{MESSAGES['whichIs'][lang]} {diff.years}y {diff.months}m {diff.days}d")
+    print("-" * 40)
 
 
 if __name__ == "__main__":
