@@ -81,7 +81,7 @@ def main():
     delta = (today - given_date).days
     print(f"{MESSAGES['daysFrom'][lang]}: {delta}")
     diff = relativedelta.relativedelta(today, given_date)
-    print(f"{MESSAGES['whichIs'][lang]} {diff.years}y {diff.months}m {diff.days}d")
+    print(f"{MESSAGES['whichIs'][lang]}: {diff.years} {MESSAGES['years'][lang]} {diff.months} {MESSAGES['months'][lang]} {diff.days} {MESSAGES['days'][lang]}")
     print("-" * 40)
 
 
