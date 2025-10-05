@@ -7,9 +7,9 @@ MESSAGES = {
     "inputDay": {"ru": "Введите день", "en": "Enter a day"},
     "inputMonth": {"ru": "Введите месяц", "en": "Enter a month"},
     "inputYear": {"ru": "Введите год", "en": "Enter a year"},
+    "errorLanguage": {"ru": "Ошибка ввода. Введите 'ru' или 'en'", "en": "Input error. Please enter 'ru' or 'en'"},
     "errorInt": {"ru": "Ошибка ввода. Введите целое число", "en": "Input error. Please enter an integer"},
     "inFuture": {"ru": "Введенная дата в будущем. Пожалуйста, введите корректную дату в прошлом", "en": "The entered date is in the future. Please enter a valid past date"},
-    "dateError": {"ru": "Ошибка ввода. Пожалуйста, введите корректную дату", "en": "Input error. Please enter a valid date"},
     "enteredDate": {"ru": "Вы ввели дату", "en": "You entered the date"},
     "day": {"ru": "день", "en": "day"},
     "month": {"ru": "месяц", "en": "month"},
@@ -44,47 +44,41 @@ def chooseLanguage():
     Defaults to English if input is invalid.
     Styled for Linux terminal look.
     """
-    lang = input("> Choose language [ru/en]: ").strip().lower()
-    if lang not in ["ru", "en"]:
-        print("! Invalid choice, defaulting to English.")
-        lang = "en"
-    return lang    
+    while True:
+        lang = input("> Choose language [ru/en]: ").strip().lower()
+        if lang not in ["ru", "en"]:
+            print(f"! {MESSAGES['errorLanguage']['en']}")
+        else:
+            return lang
 
 def inputDate(lang="en"):
     """
     Prompt the user to enter a valid past date (day, month, year).
     Ensures the date is not in the future and the day is valid for the given month/year.
     """
-
-    while True:
-        month = inputInt(MESSAGES["inputMonth"][lang], 1, 12, lang)
-        year = inputInt(MESSAGES["inputYear"][lang], 1900, 2100, lang)
-        max_day = calendar.monthrange(year, month)[1]
-        day = inputInt(MESSAGES["inputDay"][lang], 1, max_day, lang)
-
-        try:
-            given_date = date(year, month, day)
-        except ValueError:
-            print(f"! {MESSAGES['dateError'][lang]}")
-            continue
-
-        if given_date >= date.today():
-            print(f"!{MESSAGES["inFuture"][lang]}")
-        else:
-            return given_date
+    month = inputInt(MESSAGES["inputMonth"][lang], 1, 12, lang)
+    year = inputInt(MESSAGES["inputYear"][lang], 1900, 2100, lang)
+    max_day = calendar.monthrange(year, month)[1]
+    day = inputInt(MESSAGES["inputDay"][lang], 1, max_day, lang)
+    given_date = date(year, month, day)
+    if given_date >= date.today():
+        print(MESSAGES["inFuture"][lang])
+        return inputDate(lang)
+    return given_date
 
 
-def calculate_sobriety_delta(given_date):
+def calculate_sobriety_delta(given_date: date):
     """
-    Calculate the difference between the given date and today.
-    Returns the difference in days and as a relativedelta object.
+    Рассчитывает разницу в днях и относительную разницу в годах/месяцах/днях
+    между заданной датой и сегодняшним днем.
+    Возвращает кортеж: (общее_кол-во_дней, relativedelta_объект).
     """
     today = date.today()
     total_days = (today - given_date).days
     delta_relative = relativedelta.relativedelta(today, given_date)
     return total_days, delta_relative
 
-
+# --- 4. Функция Форматирования Вывода ---
 def format_output(total_days, delta_relative, lang="en"):
     """
     Форматирует строку с результатом, используя правильный язык и 
@@ -119,28 +113,3 @@ def format_output(total_days, delta_relative, lang="en"):
     output_relative_final = f"{MESSAGES['whichIs'][lang]}: {output_relative}"
     
     return output_total_days, output_relative_final
-
-def main():   
-    """
-    Main function to run the sobriety date calculator.
-    Styled for Linux terminal look.
-    """
-    # Set language preference
-    lang = chooseLanguage()
-    # Input month and year first
-    given_date = inputDate(lang)
-    day, month, year = given_date.day, given_date.month, given_date.year
-
-    print("-" * 40)
-    print(f"{MESSAGES['enteredDate'][lang]}: {day:02d}.{month:02d}.{year}")
-    today = date.today()
-    delta = (today - given_date).days
-    print(f"{MESSAGES['daysFrom'][lang]}: {delta}")
-    diff = relativedelta.relativedelta(today, given_date)
-    print(f"{MESSAGES['whichIs'][lang]}: {diff.years} {MESSAGES['years'][lang]} {diff.months} {MESSAGES['months'][lang]} {diff.days} {MESSAGES['days'][lang]}")
-    print("-" * 40)
-
-
-if __name__ == "__main__":
-    # Entry point for the script
-    main()
