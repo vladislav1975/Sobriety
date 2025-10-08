@@ -1,34 +1,38 @@
-# Импортируем только то, что нам нужно, из модуля
+# Import only the required functions and constants from the module
 from sobriety_calculator import (
-    chooseLanguage,
-    inputDate,
+    init,
+    choose_language,
+    input_date,
     calculate_sobriety_delta,
     format_output,
-    MESSAGES
+    MESSAGES,
+    get_date
 )
 
-def main():   
-    """
-    Основная функция для запуска калькулятора.
-    """
-    # 1. Установка языка и ввод даты
-    lang = chooseLanguage()
-    given_date = inputDate(lang)
-    day, month, year = given_date.day, given_date.month, given_date.year
 
-    print("-" * 40)
-    print(f"{MESSAGES['enteredDate'][lang]}: {day:02d}.{month:02d}.{year}")
+def main():
+    """
+    Main function to run the sobriety calculator CLI.
+    Handles language selection, date input, calculation, and output formatting.
+    """
 
-    # 2. Вычисления (вызывается функция модуля)
+    init()  # Initialize settings or configurations
+    
+    # Select language and input date
+    lang = choose_language()
+    given_date = get_date(lang)
+    
+    # Calculate total days and relative difference
     total_days, delta_relative = calculate_sobriety_delta(given_date)
 
-    # 3. Форматирование и вывод (вызывается функция модуля)
+    # Format and print the output
     output_days, output_relative = format_output(total_days, delta_relative, lang)
-    
+    print("-" * 40)
     print(output_days)
     print(output_relative)
     print("-" * 40)
 
 
 if __name__ == "__main__":
+    # Script entry point
     main()
