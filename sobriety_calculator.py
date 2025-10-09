@@ -1,3 +1,4 @@
+
 import calendar  # For month/day calculations
 import json  # For reading/writing JSON files
 from datetime import date  # For working with dates
@@ -15,7 +16,7 @@ MESSAGES = {
     "saveThisDate": {"ru": "Сохранить эту дату в файл? (Y/n): ", "en": "Save this date to file? (Y/n): "},
     "dateSaved": {"ru": "Дата сохранена в", "en": "Date saved to"},
     "errorLanguage": {"ru": "Ошибка ввода. Введите 'ru' или 'en'", "en": "Input error. Please enter 'ru' or 'en'"},
-    "errorInt": {"ru": "Ошибка ввода. Введите целое число", "en": "Input error. Please enter an integer"},
+    "errorInt": {"ru": "Ошибка ввода.", "en": "Input error."},
     "inFuture": {"ru": "Введенная дата в будущем. Пожалуйста, введите корректную дату в прошлом", "en": "The entered date is in the future. Please enter a valid past date"},
     "errorReadingFile": {"ru": "Ошибка чтения файла. Пожалуйста, введите дату вручную", "en": "Error reading date from file. Please enter the date manually"},
     "enteredDate": {"ru": "Вы ввели дату", "en": "You entered the date"},
@@ -36,6 +37,7 @@ LOGO_ASCII = """
       NEW BEGINNING  ::  
 +--------------------------------+
 """
+
 SETTING_PATH = ".config/sobriety_calculator/"
 SETTINGS_FILE = "date.json"
 
@@ -76,7 +78,7 @@ def input_date(lang="en"):
 
     while True:
         month = input_int(MESSAGES["inputMonth"][lang], 1, 12, lang)
-        year = input_int(MESSAGES["inputYear"][lang], 1900, 2100, lang)
+        year = input_int(MESSAGES["inputYear"][lang], 1900, date.today().year, lang)
         max_day = calendar.monthrange(year, month)[1]
         day = input_int(MESSAGES["inputDay"][lang], 1, max_day, lang)
         given_date = date(year, month, day)
@@ -86,20 +88,25 @@ def input_date(lang="en"):
         else:
             print(f"{MESSAGES['enteredDate'][lang]}: {MESSAGES['day'][lang]} {day:02d}, {MESSAGES['month'][lang]} {month:02d}, {MESSAGES['year'][lang]} {year}")
 
-            is_save = input(MESSAGES['saveThisDate'][lang])
-            if is_save.strip().lower() in ['y', 'yes', '']:
-                # Save date to file
-                config_path = Path.home() / SETTING_PATH
-                config_path.mkdir(parents=True, exist_ok=True)
-                file_path = config_path / SETTINGS_FILE
-                with open(file_path, 'w') as file_to_save:
-                    date_data = {
-                        'day':given_date.day,
-                        'month':given_date.month,
-                        'year':given_date.year
-                    }
-                    json.dump(date_data,file_to_save)
-                print(f"{MESSAGES['dateSaved'][lang]} {file_path}")
+            while True:
+                is_save = input(MESSAGES['saveThisDate'][lang])
+                if is_save.strip().lower() in ['y', 'yes', '']:
+                    # Save date to file
+                    config_path = Path.home() / SETTING_PATH
+                    config_path.mkdir(parents=True, exist_ok=True)
+                    file_path = config_path / SETTINGS_FILE
+                    with open(file_path, 'w') as file_to_save:
+                        date_data = {
+                            'day':given_date.day,
+                            'month':given_date.month,
+                            'year':given_date.year
+                        }
+                        json.dump(date_data,file_to_save)
+                    print(f"{MESSAGES['dateSaved'][lang]} {file_path}")
+                    break
+                elif is_save.strip().lower().startswith('n'):
+                    break
+
             return given_date
 
 

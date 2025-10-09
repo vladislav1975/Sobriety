@@ -8,8 +8,6 @@ from sobriety_calculator import (
     MESSAGES,
     get_date
 )
-
-
 def main():
     """
     Main function to run the sobriety calculator CLI.
@@ -17,11 +15,11 @@ def main():
     """
 
     init()  # Initialize settings or configurations
-    
+
     # Select language and input date
     lang = choose_language()
     given_date = get_date(lang)
-    
+
     # Calculate total days and relative difference
     total_days, delta_relative = calculate_sobriety_delta(given_date)
 
@@ -31,6 +29,7 @@ def main():
     print(output_days)
     print(output_relative)
     print("-" * 40)
+
 
 
 if __name__ == "__main__":
