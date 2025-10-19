@@ -92,4 +92,11 @@ Which is: 3 years, 4 months and 18 days
 ## 🤝 Contributing
 
 Pull requests are welcome! Feel free to open issues for suggestions or bugs.
+
+---
+
+## 👤 Author
+
+Vlad D. Gritsay (vlad.gritsay@gmail.com) — https://github.com/vladislav1975
+
 ```
