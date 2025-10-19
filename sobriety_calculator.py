@@ -1,15 +1,35 @@
 
+"""sobriety_calculator
+
+Small utility module that provides CLI helpers to read a sobriety/quit
+date, save/load it from a config file and calculate the time elapsed
+in days / years-months-days. All user-facing strings are stored in
+the `MESSAGES` mapping to support English and Russian output.
+
+Public functions:
+ - choose_language()
+ - input_date(lang)
+ - get_date(lang)
+ - save_date_to_file(given_date, lang)
+ - calculate_sobriety_delta(given_date)
+ - format_output(total_days, delta_relative, lang)
+"""
+
 import calendar  # For month/day calculations
 import json  # For reading/writing JSON files
 from datetime import date  # For working with dates
 from dateutil import relativedelta  # For calculating date differences
 from pathlib import Path  # For file path manipulations
 
+# All user-facing messages. Extend this dict to add more languages.
 MESSAGES = {
-    # Dictionary containing all user-facing messages in Russian and English
     "inputDay": {"ru": "Введите день", "en": "Enter a day"},
     "inputMonth": {"ru": "Введите месяц", "en": "Enter a month"},
     "inputYear": {"ru": "Введите год", "en": "Enter a year"},
+    "selectOption": {"ru": "Выберите опцию", "en": "Select an option"},
+    "useSavedDate": {"ru": "Использовать сохраненную дату", "en": "Use the saved date"},
+    "enterNewDate": {"ru": "Ввести новую дату", "en": "Enter a new date"},
+    "useTodaysDate": {"ru": "Использовать и сохранить сегодняшнюю дату", "en": "Use and save today's date"},
     "readingDate": {"ru": "Чтение даты из файла...", "en": "Reading date from file..."},
     "useThisDate": {"ru": "Использовать эту дату? (Нажмите Enter для подтверждения): ", "en": "Use this date? (Press Enter to confirm): "},
     "dateReadFromFile": {"ru": "Дата прочитана из файла:", "en": "Date read from file:"},
@@ -18,8 +38,9 @@ MESSAGES = {
     "errorLanguage": {"ru": "Ошибка ввода. Введите 'ru' или 'en'", "en": "Input error. Please enter 'ru' or 'en'"},
     "errorInt": {"ru": "Ошибка ввода.", "en": "Input error."},
     "inFuture": {"ru": "Введенная дата в будущем. Пожалуйста, введите корректную дату в прошлом", "en": "The entered date is in the future. Please enter a valid past date"},
-    "errorReadingFile": {"ru": "Ошибка чтения файла. Пожалуйста, введите дату вручную", "en": "Error reading date from file. Please enter the date manually"},
+    "errorReadingFile": {"ru": "Ошибка чтения файла.", "en": "Error reading date from file."},
     "enteredDate": {"ru": "Вы ввели дату", "en": "You entered the date"},
+    "fileNotFound": {"ru": "Файл даты не найден", "en": "Date file not found."},
     "day": {"ru": "день", "en": "day"},
     "month": {"ru": "месяц", "en": "month"},
     "year": {"ru": "год", "en": "year"},
@@ -33,12 +54,14 @@ MESSAGES = {
 
 
 LOGO_ASCII = """
-  🌱 S O B R I E T Y C O U N T E R
-      NEW BEGINNING  ::  
+    S O B R I E T Y C O U N T E R
+            NEW BEGINNING  ::  
 +--------------------------------+
 """
 
+# Where to store the saved date relative to the user's home directory
 SETTING_PATH = ".config/sobriety_calculator/"
+# Filename used to persist the date
 SETTINGS_FILE = "date.json"
 
 def input_int(prompt, min_value, max_value, lang="en"):
@@ -52,10 +75,29 @@ def input_int(prompt, min_value, max_value, lang="en"):
             value = int(input(f"> {prompt} [{min_value}-{max_value}]: "))
             if min_value <= value <= max_value:
                 return value
-            else:
-                print(f"! {MESSAGES['errorInt'][lang]}")
-        except ValueError:
+            # Out of allowed range
             print(f"! {MESSAGES['errorInt'][lang]}")
+        except ValueError:
+            # Non-integer input
+            print(f"! {MESSAGES['errorInt'][lang]}")
+
+def save_date_to_file(given_date: date, lang: str = "en") -> Path:
+    """
+    Save given_date to the settings file and return the file path.
+    """
+    # Ensure config directory exists, then write the date as JSON
+    config_path = Path.home() / SETTING_PATH
+    config_path.mkdir(parents=True, exist_ok=True)
+    file_path = config_path / SETTINGS_FILE
+    date_data = {
+        "day": given_date.day,
+        "month": given_date.month,
+        "year": given_date.year,
+    }
+    with open(file_path, "w", encoding="utf-8") as file_to_save:
+        json.dump(date_data, file_to_save)
+    print(f"{MESSAGES['dateSaved'][lang]} {file_path}")
+    return file_path
 
 def choose_language():
     """
@@ -66,6 +108,8 @@ def choose_language():
     while True:
         lang = input("> Choose language [ru/en]: ").strip().lower()
         if lang not in ["ru", "en"]:
+            # Always show this specific error in English so the prompt remains
+            # understandable even if the user's input is malformed.
             print(f"! {MESSAGES['errorLanguage']['en']}")
         else:
             return lang
@@ -82,29 +126,24 @@ def input_date(lang="en"):
         max_day = calendar.monthrange(year, month)[1]
         day = input_int(MESSAGES["inputDay"][lang], 1, max_day, lang)
         given_date = date(year, month, day)
-        
+
+        # Do not accept future dates
         if given_date >= date.today():
             print(MESSAGES["inFuture"][lang])
         else:
-            print(f"{MESSAGES['enteredDate'][lang]}: {MESSAGES['day'][lang]} {day:02d}, {MESSAGES['month'][lang]} {month:02d}, {MESSAGES['year'][lang]} {year}")
+            # Show the parsed date in a compact format
+            print(
+                f"{MESSAGES['enteredDate'][lang]}: {MESSAGES['day'][lang]} {day:02d}, "
+                f"{MESSAGES['month'][lang]} {month:02d}, {MESSAGES['year'][lang]} {year}"
+            )
 
+            # Ask whether the user wants to persist the date
             while True:
                 is_save = input(MESSAGES['saveThisDate'][lang])
                 if is_save.strip().lower() in ['y', 'yes', '']:
-                    # Save date to file
-                    config_path = Path.home() / SETTING_PATH
-                    config_path.mkdir(parents=True, exist_ok=True)
-                    file_path = config_path / SETTINGS_FILE
-                    with open(file_path, 'w') as file_to_save:
-                        date_data = {
-                            'day':given_date.day,
-                            'month':given_date.month,
-                            'year':given_date.year
-                        }
-                        json.dump(date_data,file_to_save)
-                    print(f"{MESSAGES['dateSaved'][lang]} {file_path}")
+                    save_date_to_file(given_date, lang)
                     break
-                elif is_save.strip().lower().startswith('n'):
+                if is_save.strip().lower().startswith('n'):
                     break
 
             return given_date
@@ -117,22 +156,70 @@ def get_date(lang="en"):
     config_path = Path.home() / SETTING_PATH
     file_path = config_path / SETTINGS_FILE
     if file_path.exists():
+        # Try to read persisted date from JSON file
         print(MESSAGES['readingDate'][lang])
-        with open(file_path, 'r') as file_to_read:
+        with open(file_path, 'r', encoding='utf-8') as file_to_read:
             try:
                 date_data = json.load(file_to_read)
             except json.JSONDecodeError:
-                print(MESSAGES['errorReadingFile'][lang])
-                return input_date(lang)
-        print(f"{MESSAGES['dateReadFromFile'][lang]} {date_data['day']:02d}.{date_data['month']:02d}.{date_data['year']}")
-        is_use_saved_date = input(MESSAGES['useThisDate'][lang])
-        if is_use_saved_date.strip().lower() not in ['', 'y', 'yes']:
-            return input_date(lang) 
-        
-        return date(date_data['year'], date_data['month'], date_data['day'])
+                # If the file is corrupt offer to re-enter or use today's date
+                print(MESSAGES['errorReadingFile'][lang] + "\n")
+                print(f"1. {MESSAGES['enterNewDate'][lang]}")
+                print(f"2. {MESSAGES['useTodaysDate'][lang]}")
+                while True:
+                    date_option = input("> ")
+                    if date_option.strip() in ('1', '2'):
+                        break
+                    else:
+                        print(f"! {MESSAGES['errorInt'][lang]}")
+                if date_option.strip() == '1':
+                    return input_date(lang)
+                # option 2: save and return today's date
+                today = date.today()
+                save_date_to_file(today, lang)
+                return today
+
+        # If read successful, present the saved date and options
+        print(
+            f"{MESSAGES['dateReadFromFile'][lang]} {date_data['day']:02d}."
+            f"{date_data['month']:02d}.{date_data['year']}"
+        )
+        # Selecting date for work
+        print()
+        print(f"1. {MESSAGES['useSavedDate'][lang]}")
+        print(f"2. {MESSAGES['enterNewDate'][lang]}")
+        print(f"3. {MESSAGES['useTodaysDate'][lang]}")
+        while True:
+            date_option = input("> ")
+            if date_option.strip() in ('1', '2', '3'):
+                break
+            else:
+                print(f"! {MESSAGES['errorInt'][lang]}")
+        if date_option.strip() == '1':
+            return date(date_data['year'], date_data['month'], date_data['day'])
+        if date_option.strip() == '2':
+            return input_date(lang)
+        # option 3: use today's date and persist it
+        today = date.today()
+        save_date_to_file(today, lang)
+        return today
     else:
-        print("Date file not found. Please enter the date manually.")
-        return input_date(lang)
+        print(MESSAGES['fileNotFound'][lang] + "\n")
+        print(f"1. {MESSAGES['enterNewDate'][lang]}")
+        print(f"2. {MESSAGES['useTodaysDate'][lang]}")
+
+        while True:
+            date_option = input("> ")
+            if date_option.strip() in ('1', '2'):
+                break
+            else:
+                print(f"! {MESSAGES['errorInt'][lang]}")
+        if date_option.strip() == '1':
+            return input_date(lang)
+        else:  # option 2
+            today = date.today()
+            save_date_to_file(today, lang)
+            return today    
 
 def calculate_sobriety_delta(given_date: date):
     """
@@ -183,4 +270,5 @@ def init():
     Initialize any required settings or configurations.
     Currently a placeholder for future use.
     """
+    # Print the small ASCII logo on startup
     print(LOGO_ASCII)

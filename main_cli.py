@@ -1,4 +1,10 @@
-# Import only the required functions and constants from the module
+"""Command-line entry point for the sobriety calculator.
+
+This small wrapper imports the helpers from `sobriety_calculator` and
+executes the typical CLI flow: initialization, language selection, date
+selection, calculation and formatted output.
+"""
+
 from sobriety_calculator import (
     init,
     choose_language,
@@ -6,7 +12,7 @@ from sobriety_calculator import (
     calculate_sobriety_delta,
     format_output,
     MESSAGES,
-    get_date
+    get_date,
 )
 def main():
     """
@@ -14,7 +20,8 @@ def main():
     Handles language selection, date input, calculation, and output formatting.
     """
 
-    init()  # Initialize settings or configurations
+    # Initialize settings (prints logo and ensures config dir exists on save)
+    init()
 
     # Select language and input date
     lang = choose_language()
