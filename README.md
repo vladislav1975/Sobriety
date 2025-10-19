@@ -1,6 +1,3 @@
-Thanks! Here's your Markdown cleaned up and properly formatted for your `README.md` file. I’ve corrected indentation, code blocks, and section breaks so it renders beautifully on GitHub:
-
-```markdown
 # 🌱 Sobriety Calculator
 
 A simple command-line tool to help you track your sobriety journey in English or Russian. It calculates the number of days since your quit date and displays your progress in years, months, and days.
