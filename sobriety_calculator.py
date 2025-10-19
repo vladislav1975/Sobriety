@@ -61,6 +61,7 @@ LOGO_ASCII = """
 
 # Where to store the saved date relative to the user's home directory
 SETTING_PATH = ".config/sobriety_calculator/"
+
 # Filename used to persist the date
 SETTINGS_FILE = "date.json"
 
@@ -233,6 +234,7 @@ def calculate_sobriety_delta(given_date: date):
     return total_days, delta_relative
 
 # Format the output for the sobriety calculation result
+
 def format_output(total_days, delta_relative, lang="en"):
     """
     Formats the result string using the correct language and grammar.
