@@ -57,9 +57,9 @@ LOGO_ASCII = """
     S O B R I E T Y C O U N T E R
             NEW BEGINNING  ::  
 +--------------------------------+
-Author: Vlad D. Gritsay 
-(vlad.gritsay@gmail.com)
- https://github.com/vladislav1975
+     Author: Vlad D. Gritsay 
+     (vlad.gritsay@gmail.com)
+https://github.com/vladislav1975
 """
 
 # Where to store the saved date relative to the user's home directory
