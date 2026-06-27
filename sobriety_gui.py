@@ -24,25 +24,41 @@ def load_date_gui():
 
 def main():
     lang = "ru"
-    
-    # Загружаем дату без вопросов в консоли
     given_date = load_date_gui()
     
-    # Считаем дни
     total_days, delta_relative = calculate_sobriety_delta(given_date)
     output_days, output_relative = format_output(total_days, delta_relative, lang)
 
-    # Создаем окно
     window = tk.Tk()
-    window.title("Калькулятор трезвости")
-    window.geometry("400x120")
+    
+    # --- МАГИЯ ВИДЖЕТА ---
+    # 1. Убираем системную рамку и заголовок окна
+    window.overrideredirect(True)
+    
+    # 2. Задаем размер и положение на экране (Ширина x Высота + Отступ_X + Отступ_Y)
+    # Например, разместим окошко в правом верхнем углу экрана
+    window.geometry("350x90+1000+50")
+    
+    # 3. Красим фон окна в приятный темно-серый цвет (как в терминале)
+    window.configure(bg="#2d2d2d")
+    # ---------------------
 
     full_text = f"{output_days}\n{output_relative}"
 
-    label = tk.Label(window, text=full_text, font=("Arial", 11), justify="center")
-    label.pack(pady=25)
+    # Настраиваем текст: делаем его белым (fg), а фон — темно-серым (bg) в тон окну
+    label = tk.Label(
+        window, 
+        text=full_text, 
+        font=("Arial", 11, "bold"), 
+        justify="center",
+        fg="#ffffff",
+        bg="#2d2d2d"
+    )
+    label.pack(pady=20)
+
+    # Поскольку кнопок закрытия больше нет, добавим выход из виджета по двойному клику мыши
+    window.bind("<Double-Button-1>", lambda event: window.destroy())
 
     window.mainloop()
-
 if __name__ == "__main__":
     main()
