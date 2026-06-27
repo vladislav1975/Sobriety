@@ -26,7 +26,7 @@ cd Sobriety
 
 ### 2. Run the Program
 ```bash
-python main_cli.py
+python sobriety.py
 ```
 
 ---

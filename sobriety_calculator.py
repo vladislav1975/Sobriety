@@ -264,7 +264,7 @@ def format_output(total_days, delta_relative, lang="en"):
             last_item = parts[-1]
             all_but_last = parts[:-1]
             output_relative = f"{', '.join(all_but_last)} and {last_item}"
-    elif lang == "ru":
+    else: #elif lang == "ru":
         output_relative = ", ".join(parts)
 
     output_relative_final = f"{MESSAGES['whichIs'][lang]}: {output_relative}"
