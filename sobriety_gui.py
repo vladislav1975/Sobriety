@@ -2,7 +2,6 @@ import tkinter as tk
 import json
 from datetime import date
 from pathlib import Path
-# Импортируем только математику расчёта, без интерактивных функций ввода
 from sobriety_calculator import calculate_sobriety_delta, format_output, SETTING_PATH, SETTINGS_FILE
 
 def load_date_gui():
@@ -16,11 +15,27 @@ def load_date_gui():
                 date_data = json.load(file)
                 return date(date_data['year'], date_data['month'], date_data['day'])
         except Exception:
-            # Если файл поврежден, возвращаем сегодня
             return date.today()
     else:
-        # Если файла нет, возвращаем сегодня
         return date.today()
+
+# --- ЛОГИКА ПЕРЕТАСКИВАНИЯ ОКНА ---
+# Создаем простой словарь для хранения координат
+drag_data = {"x": 0, "y": 0}
+
+def start_drag(event):
+    """Запоминаем начальные координаты мыши при клике"""
+    drag_data["x"] = event.x
+    drag_data["y"] = event.y
+
+def drag_window(event, window):
+    """Вычисляем сдвиг и перемещаем окно"""
+    deltax = event.x - drag_data["x"]
+    deltay = event.y - drag_data["y"]
+    new_x = window.winfo_x() + deltax
+    new_y = window.winfo_y() + deltay
+    window.geometry(f"+{new_x}+{new_y}")
+# ----------------------------------
 
 def main():
     lang = "ru"
@@ -30,22 +45,14 @@ def main():
     output_days, output_relative = format_output(total_days, delta_relative, lang)
 
     window = tk.Tk()
-    
-    # --- МАГИЯ ВИДЖЕТА ---
-    # 1. Убираем системную рамку и заголовок окна
     window.overrideredirect(True)
     
-    # 2. Задаем размер и положение на экране (Ширина x Высота + Отступ_X + Отступ_Y)
-    # Например, разместим окошко в правом верхнем углу экрана
+    # Стартовая позиция виджета
     window.geometry("350x90+1000+50")
-    
-    # 3. Красим фон окна в приятный темно-серый цвет (как в терминале)
     window.configure(bg="#2d2d2d")
-    # ---------------------
 
     full_text = f"{output_days}\n{output_relative}"
 
-    # Настраиваем текст: делаем его белым (fg), а фон — темно-серым (bg) в тон окну
     label = tk.Label(
         window, 
         text=full_text, 
@@ -56,9 +63,20 @@ def main():
     )
     label.pack(pady=20)
 
-    # Поскольку кнопок закрытия больше нет, добавим выход из виджета по двойному клику мыши
+    # --- ОБНОВЛЕННАЯ ПРИВЯЗКА СОБЫТИЙ МЫШИ ---
+    # Теперь мы не передаем window в start_drag, так как используем глобальный drag_data
+    window.bind("<Button-1>", start_drag)
+    label.bind("<Button-1>", start_drag)
+
+    # В drag_window по-прежнему передаем window, чтобы знать, какое окно двигать
+    window.bind("<B1-Motion>", lambda event: drag_window(event, window))
+    label.bind("<B1-Motion>", lambda event: drag_window(event, window))
+
+    # Двойной клик для закрытия
     window.bind("<Double-Button-1>", lambda event: window.destroy())
+    label.bind("<Double-Button-1>", lambda event: window.destroy())
 
     window.mainloop()
+
 if __name__ == "__main__":
     main()
