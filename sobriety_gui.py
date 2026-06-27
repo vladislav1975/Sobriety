@@ -48,7 +48,7 @@ def main():
     window.overrideredirect(True)
     
     # Стартовая позиция виджета
-    window.geometry("350x90+1000+50")
+    window.geometry("260x35+870+2")
     window.configure(bg="#2d2d2d")
 
     full_text = f"{output_days}\n{output_relative}"
@@ -56,12 +56,12 @@ def main():
     label = tk.Label(
         window, 
         text=full_text, 
-        font=("Arial", 11, "bold"), 
+        font=("Arial", 9, "bold"), 
         justify="center",
         fg="#ffffff",
         bg="#2d2d2d"
     )
-    label.pack(pady=20)
+    label.pack(pady=1)
 
     # --- ОБНОВЛЕННАЯ ПРИВЯЗКА СОБЫТИЙ МЫШИ ---
     # Теперь мы не передаем window в start_drag, так как используем глобальный drag_data
